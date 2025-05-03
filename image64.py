@@ -1,55 +1,50 @@
+#!/usr/bin/env python3
 import base64
 import sys
 from pathlib import Path
 
-
 def encode_image_to_base64(image_path):
     with open(image_path, "rb") as image_file:
-        encoded = base64.b64encode(image_file.read()).decode("utf-8")
-    return encoded
-
+        return base64.b64encode(image_file.read()).decode("utf-8")
 
 def decode_base64_to_image(base64_string, output_path):
     with open(output_path, "wb") as image_output:
         image_output.write(base64.b64decode(base64_string))
 
-
 def main():
-    if len(sys.argv) < 3:
+    if len(sys.argv) != 4:
         print("Usage:")
-        print("  Encode: python image64.py encode <image_path>")
-        print("  Decode: python image64.py decode <base64_file> <output_image_path>")
+        print("  Encode: image64 encode <input_image_path> <output_text_path>")
+        print("  Decode: image64 decode <input_text_path> <output_image_path>")
         sys.exit(1)
 
-    mode = sys.argv[1]
+    mode = sys.argv[1].lower()
+    input_path = sys.argv[2]
+    output_path = sys.argv[3]
 
     if mode == "encode":
-        image_path = sys.argv[2]
-        encoded = encode_image_to_base64(image_path)
-
-        # Save to file
-        output_file = Path(image_path).with_suffix(".txt")
-        with open(output_file, "w") as f:
-            f.write(encoded)
-
-        print("Base64 encoded string saved to:", output_file)
-
-    elif mode == "decode":
-        if len(sys.argv) < 4:
-            print("Please provide base64 text file and output image path.")
+        try:
+            encoded = encode_image_to_base64(input_path)
+            with open(output_path, "w") as f:
+                f.write(encoded)
+            print(f"✅ Image encoded and saved to: {output_path}")
+        except Exception as e:
+            print(f"❌ Encoding failed: {e}")
             sys.exit(1)
 
-        base64_file = sys.argv[2]
-        output_path = sys.argv[3]
-
-        with open(base64_file, "r") as f:
-            base64_string = f.read()
-        decode_base64_to_image(base64_string, output_path)
-        print(f"Image saved to {output_path}")
+    elif mode == "decode":
+        try:
+            with open(input_path, "r") as f:
+                base64_string = f.read()
+            decode_base64_to_image(base64_string, output_path)
+            print(f"✅ Image decoded and saved to: {output_path}")
+        except Exception as e:
+            print(f"❌ Decoding failed: {e}")
+            sys.exit(1)
 
     else:
-        print("Invalid mode. Use 'encode' or 'decode'.")
-
+        print("❌ Invalid mode. Use 'encode' or 'decode'.")
+        sys.exit(1)
 
 if __name__ == "__main__":
     main()
